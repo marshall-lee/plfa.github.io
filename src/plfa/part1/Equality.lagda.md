@@ -385,7 +385,102 @@ it to write out an alternative proof that addition is monotonic with
 regard to inequality.  Rewrite all of `+-monoˡ-≤`, `+-monoʳ-≤`, and `+-mono-≤`.
 
 ```agda
--- Your code goes here
+data _≤_ : ℕ → ℕ → Set where
+
+  z≤n : ∀ {n : ℕ}
+      --------
+    → zero ≤ n
+
+  s≤s : ∀ {m n : ℕ}
+    → m ≤ n
+      -------------
+    → suc m ≤ suc n
+
+infix 4 _≤_
+
+≤-trans : ∀ {m n p : ℕ}
+  → m ≤ n
+  → n ≤ p
+    -----
+  → m ≤ p
+≤-trans z≤n       _          =  z≤n
+≤-trans (s≤s m≤n) (s≤s n≤p)  =  s≤s (≤-trans m≤n n≤p)
+
+≤-refl : ∀ {n : ℕ}
+    -----
+  → n ≤ n
+≤-refl {zero} = z≤n
+≤-refl {suc n} = s≤s ≤-refl
+
+module ≤-Reasoning where
+
+  infix  1 begin≤_
+  infixr 2 _≤⟨⟩_ step-≤
+  infix  3 _≤∎
+
+  begin≤_ : ∀ {x y : ℕ}
+    → x ≤ y
+      -----
+    → x ≤ y
+  begin≤ x≤y  =  x≤y
+
+  _≤⟨⟩_ : ∀ (x : ℕ) {y : ℕ}
+    → x ≤ y
+      -----
+    → x ≤ y
+  x ≤⟨⟩ x≤y  =  x≤y
+
+  step-≤ : ∀ (x {y z} : ℕ) → y ≤ z → x ≤ y → x ≤ z
+  step-≤ x y≤z x≤y  =  ≤-trans x≤y y≤z
+
+  syntax step-≤ x y≤z x≤y  =  x ≤⟨  x≤y ⟩ y≤z
+
+  _≤∎ : ∀ (x : ℕ)
+      -----
+    → x ≤ x
+  x ≤∎  =  ≤-refl
+
+open ≤-Reasoning
+
++-monoʳ-≤ : ∀ (n p q : ℕ)
+  → p ≤ q
+    -------------
+  → n + p ≤ n + q
++-monoʳ-≤ zero    p q p≤q  =  p≤q
++-monoʳ-≤ (suc n) p q p≤q  =  s≤s (+-monoʳ-≤ n p q p≤q)
+
+≤-suc : ∀ {n : ℕ} → n ≤ suc n
+≤-suc {zero} = z≤n
+≤-suc {suc n} = s≤s (≤-suc {n})
+
++-monoˡ-≤ : ∀ (m n p : ℕ)
+  → m ≤ n
+    -------------
+  → m + p ≤ n + p
++-monoˡ-≤ zero zero _ _ = ≤-refl
++-monoˡ-≤ zero (suc n) p _ =
+  begin≤
+    p
+  ≤⟨ (+-monoˡ-≤ zero n p z≤n) ⟩
+    n + p
+  ≤⟨ ≤-suc ⟩
+    suc (n + p)
+  ≤∎
++-monoˡ-≤ (suc m) (suc n) p (s≤s m≤n) = s≤s (+-monoˡ-≤ m n p m≤n)
+
++-mono-≤ : ∀ (m n p q : ℕ)
+  → m ≤ n
+  → p ≤ q
+    -------------
+  → m + p ≤ n + q
++-mono-≤ m n p q m≤n p≤q  =  -- ≤-trans (+-monoˡ-≤ m n p m≤n) (+-monoʳ-≤ n p q p≤q)
+  begin≤
+    m + p
+  ≤⟨ +-monoˡ-≤ m n p m≤n ⟩
+    n + p
+  ≤⟨ +-monoʳ-≤ n p q p≤q ⟩
+    n + q
+  ≤∎
 ```
 
 

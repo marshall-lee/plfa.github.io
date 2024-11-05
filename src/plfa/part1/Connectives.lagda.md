@@ -451,7 +451,14 @@ commutative and associative _up to isomorphism_.
 Show sum is commutative up to isomorphism.
 
 ```agda
--- Your code goes here
+⊎-comm : ∀ {A B : Set} → A ⊎ B ≃ B ⊎ A
+⊎-comm =
+  record
+    { to = case-⊎ inj₂ inj₁
+    ; from = case-⊎ inj₂ inj₁
+    ; from∘to = λ{ (inj₁ x) → refl; (inj₂ x) -> refl }
+    ; to∘from = λ{ (inj₁ x) → refl; (inj₂ x) -> refl }
+    }
 ```
 
 #### Exercise `⊎-assoc` (practice)
@@ -459,7 +466,14 @@ Show sum is commutative up to isomorphism.
 Show sum is associative up to isomorphism.
 
 ```agda
--- Your code goes here
+⊎-assoc : ∀ {A B C : Set} → (A ⊎ B) ⊎ C ≃ A ⊎ (B ⊎ C)
+⊎-assoc =
+  record
+    { to = case-⊎ (case-⊎ inj₁ (inj₂ ∘ inj₁)) (inj₂ ∘ inj₂)
+    ; from = case-⊎ (inj₁ ∘ inj₁) (case-⊎ (inj₁ ∘ inj₂) inj₂)
+    ; from∘to = λ { (inj₁ (inj₁ x)) → refl; (inj₁ (inj₂ x)) → refl; (inj₂ x) → refl }
+    ; to∘from = λ { (inj₁ x) → refl; (inj₂ (inj₁ x)) → refl; (inj₂ (inj₂ x)) → refl }
+    }
 ```
 
 ## False is empty
